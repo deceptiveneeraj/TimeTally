@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Tally</title>
+    <link rel="icon" type="image/png" href="./assests/favicon.png">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- QR Code Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
+</head>
+<body>
+    <div class="container-wrapper">
+        <!-- Home Page -->
+        <div id="homePage">
+            <div class="navbar-custom">
+                <i class="fas fa-bars menu-icon" onclick="showMainMenu()"></i>
+                <div class="title"><img src="./assests/logo.png" alt="Time Tally"></div>
+                <i class="fas fa-plus add-icon" onclick="showAddSubjectModal()"></i>
+            </div>
+            <div id="subjectsList">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-check"></i>
+                    <h4>No Subjects Added</h4>
+                    <p>Click the + button to add your first subject or work</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Page -->
+        <div id="detailPage" style="display: none;">
+            <div class="navbar-custom">
+                <i class="fas fa-arrow-left back-button" onclick="goBack()"></i>
+                <div class="title" id="detailTitle"></div>
+                <i class="fas fa-ellipsis-v" style="cursor: pointer;" onclick="showOptionsMenu()"></i>
+            </div>
+            
+            <div class="calendar-header">
+                <div class="calendar-nav" onclick="changeMonth(-1)">Prev</div>
+                <div id="currentMonth" style="font-weight: 600; font-size: 16px;"></div>
+                <div class="calendar-nav" onclick="changeMonth(1)">Next</div>
+            </div>
+
+            <div class="weekdays">
+                <div>SUN</div>
+                <div>MON</div>
+                <div>TUE</div>
+                <div>WED</div>
+                <div>THU</div>
+                <div>FRI</div>
+                <div>SAT</div>
+            </div>
+
+            <div class="calendar-days" id="calendarDays"></div>
+
+            <div class="footer-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Present</span>
+                    <span class="stat-value" id="presentCount">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Absent</span>
+                    <span class="stat-value" id="absentCount">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Half Days</span>
+                    <span class="stat-value" id="halfDayCount">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">OT</span>
+                    <span class="stat-value" id="otCount">0 hrs - 0 days</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Total Percentage</span>
+                    <span class="stat-value" id="totalPercentage">0%</span>
+                </div>
+                <div style="margin-top: 15px;">
+                    <button class="btn btn-primary w-100 btn-custom" onclick="showMoreInfo()">More Info</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Status Indicator -->
+    <div id="connectionStatus" class="sync-indicator" style="display: none;">
+        <i class="fas fa-link"></i> Connected
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div class="modal fade" id="addSubjectModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Subject or Work</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="subjectInput" placeholder="Math, Job Name, Company Name, etc.">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary btn-custom" onclick="addSubject()">
+                        <i class="fas fa-plus"></i> ADD
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Modal -->
+    <div class="modal fade" id="attendanceModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Mark Attendance</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="attendance-option" onclick="markAttendance('present')">
+                        <i class="fas fa-check-circle" style="color: var(--success-color);"></i>
+                        <span>Present</span>
+                    </div>
+                    <div class="attendance-option" onclick="markAttendance('absent')">
+                        <i class="fas fa-times-circle" style="color: var(--danger-color);"></i>
+                        <span>Absent</span>
+                    </div>
+                    <div class="attendance-option" onclick="markAttendance('halfday')">
+                        <i class="fas fa-adjust" style="color: var(--secondary-color);"></i>
+                        <span>Half Day</span>
+                    </div>
+                    <div class="attendance-option" onclick="showOvertimeInput()">
+                        <i class="fas fa-clock" style="color: #3498db;"></i>
+                        <span>Over Time</span>
+                    </div>
+                    <div class="attendance-option" onclick="showShiftMenu()">
+                        <i class="fas fa-business-time" style="color: #16a085;"></i>
+                        <span>Shift</span>
+                    </div>
+                    <div class="attendance-option" onclick="showMoreOptions()">
+                        <i class="fas fa-ellipsis-h" style="color: #95a5a6;"></i>
+                        <span>More Options</span>
+                    </div>
+                    <div class="attendance-option" onclick="clearAttendance()">
+                        <i class="fas fa-eraser" style="color: #e74c3c;"></i>
+                        <span>Clear</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shift Menu Modal -->
+    <div class="modal fade" id="shiftModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Shift</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="attendance-option" onclick="setShift('M')">
+                        <i class="fas fa-sun"></i>
+                        <span>Morning</span>
+                    </div>
+                    <div class="attendance-option" onclick="setShift('A')">
+                        <i class="fas fa-cloud-sun"></i>
+                        <span>Afternoon</span>
+                    </div>
+                    <div class="attendance-option" onclick="setShift('N')">
+                        <i class="fas fa-moon"></i>
+                        <span>Night</span>
+                    </div>
+                    <div class="attendance-option" onclick="setShift('G')">
+                        <i class="fas fa-briefcase"></i>
+                        <span>General</span>
+                    </div>
+                    <div class="attendance-option" onclick="setShift('')">
+                        <i class="fas fa-times"></i>
+                        <span>Clear Shift</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Options Modal -->
+    <div class="modal fade" id="moreOptionsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">More Options</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="attendance-option" onclick="markAttendance('holiday')">
+                        <i class="fas fa-umbrella-beach" style="color: #9b59b6;"></i>
+                        <span>Holiday</span>
+                    </div>
+                    <div class="attendance-option" onclick="markAttendance('weekoff')">
+                        <i class="fas fa-calendar-times" style="color: #34495e;"></i>
+                        <span>Week Off</span>
+                    </div>
+                    <div class="attendance-option" onclick="showLeaveMenu()">
+                        <i class="fas fa-file-medical" style="color: #e67e22;"></i>
+                        <span>Leave</span>
+                    </div>
+                    <div class="attendance-option" onclick="addNote()">
+                        <i class="fas fa-sticky-note" style="color: #f39c12;"></i>
+                        <span>Add Note</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Menu Modal -->
+    <div class="modal fade" id="leaveModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Leave Type</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="attendance-option" onclick="markLeave('privileged')">
+                        <i class="fas fa-star"></i>
+                        <span>Privileged Leave</span>
+                    </div>
+                    <div class="attendance-option" onclick="markLeave('casual')">
+                        <i class="fas fa-coffee"></i>
+                        <span>Casual Leave</span>
+                    </div>
+                    <div class="attendance-option" onclick="markLeave('sick')">
+                        <i class="fas fa-thermometer"></i>
+                        <span>Sick Leave</span>
+                    </div>
+                    <div class="attendance-option" onclick="markLeave('other')">
+                        <i class="fas fa-ellipsis-h"></i>
+                        <span>Other Leave</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Options Menu Modal -->
+    <div class="modal fade" id="optionsMenuModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Options</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="submenu-option" onclick="searchAttendance()">
+                        <i class="fas fa-search"></i> Search Attendance
+                    </div>
+                    <div class="submenu-option" onclick="calculateSalary()">
+                        <i class="fas fa-calculator"></i> Calculate Salary
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- More Info Modal -->
+    <div class="modal fade" id="moreInfoModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detailed Information</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="more-info-grid">
+                        <div class="info-card">
+                            <div class="info-label">Holidays</div>
+                            <div class="info-value" id="infoHolidays">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Week Offs</div>
+                            <div class="info-value" id="infoWeekOffs">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Privileged Leave</div>
+                            <div class="info-value" id="infoPrivileged">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Casual Leave</div>
+                            <div class="info-value" id="infoCasual">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Sick Leave</div>
+                            <div class="info-value" id="infoSick">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Other Leave</div>
+                            <div class="info-value" id="infoOther">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Morning Shift</div>
+                            <div class="info-value" id="infoMorning">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Afternoon Shift</div>
+                            <div class="info-value" id="infoAfternoon">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">Night Shift</div>
+                            <div class="info-value" id="infoNight">0</div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-label">General Shift</div>
+                            <div class="info-value" id="infoGeneral">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Menu Modal -->
+    <div class="modal fade" id="mainMenuModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Menu</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="submenu-option" onclick="showQRSyncModal()">
+                        <i class="fas fa-qrcode"></i> QR Sync (Real-time)
+                    </div>
+                    <div class="submenu-option" onclick="showBackupModal()">
+                        <i class="fas fa-cloud-upload-alt"></i> Backup & Restore
+                    </div>
+                    <div class="submenu-option" onclick="showSettings()">
+                        <i class="fas fa-cog"></i> Settings
+                    </div>
+                    <div class="submenu-option" onclick="showHelp()">
+                        <i class="fas fa-question-circle"></i> Help & Instructions
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Backup Modal -->
+    <div class="modal fade" id="backupModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Backup & Restore</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="backup-option" onclick="exportData()">
+                        <i class="fas fa-download" style="color: #3498db;"></i>
+                        <div>
+                            <div style="font-weight: 600;">Export Data</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">Download backup file to your device</div>
+                        </div>
+                    </div>
+                    <div class="backup-option" onclick="importData()">
+                        <i class="fas fa-upload" style="color: #2ecc71;"></i>
+                        <div>
+                            <div style="font-weight: 600;">Import Data</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">Upload backup file to restore data</div>
+                        </div>
+                    </div>
+                    <div class="backup-option" onclick="showAutoBackupInfo()">
+                        <i class="fas fa-sync" style="color: #9b59b6;"></i>
+                        <div>
+                            <div style="font-weight: 600;">Auto Save</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">Data saves automatically every 30 seconds</div>
+                        </div>
+                    </div>
+                    <div class="backup-option" onclick="clearAllData()">
+                        <i class="fas fa-trash" style="color: #e74c3c;"></i>
+                        <div>
+                            <div style="font-weight: 600;">Clear All Data</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">Delete all subjects and attendance records</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QR Sync Modal -->
+    <div class="modal fade" id="qrSyncModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">QR Code Sync</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopQRScanning()"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="connectionInfo" class="connection-status disconnected">
+                        <i class="fas fa-unlink"></i> Not Connected
+                    </div>
+                    
+                    <div class="d-flex gap-2 mb-3">
+                        <button class="btn btn-primary btn-custom flex-fill" onclick="showGenerateQR()">
+                            <i class="fas fa-qrcode"></i> Generate QR
+                        </button>
+                        <button class="btn btn-success btn-custom flex-fill" onclick="startQRScanning()">
+                            <i class="fas fa-camera"></i> Scan QR
+                        </button>
+                    </div>
+
+                    <!-- Generate QR Section -->
+                    <div id="generateSection" style="display: none;">
+                        <div class="qr-container">
+                            <h6>Scan this QR with another device:</h6>
+                            <div id="qrCodeDisplay" class="qr-code"></div>
+                            <p class="text-muted mt-2">This QR contains your current data for synchronization</p>
+                            <button class="btn btn-secondary btn-sm" onclick="refreshQRCode()">
+                                <i class="fas fa-sync"></i> Refresh QR
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Scan QR Section -->
+                    <div id="scanSection" style="display: none;">
+                        <div class="camera-container">
+                            <video id="qrScanner" style="display: none;"></video>
+                            <canvas id="qrCanvas" style="display: none;"></canvas>
+                            <div class="scan-frame"></div>
+                            <div class="text-center mt-3">
+                                <p>Point camera at QR code to scan</p>
+                                <button class="btn btn-danger btn-sm" onclick="stopQRScanning()">
+                                    <i class="fas fa-stop"></i> Stop Scanning
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div id="instructionsSection">
+                        <h6>How to Sync:</h6>
+                        <ol style="text-align: left; font-size: 14px;">
+                            <li><strong>Device A</strong>: Click "Generate QR"</li>
+                            <li><strong>Device B</strong>: Click "Scan QR"</li>
+                            <li>Point Device B's camera at Device A's QR code</li>
+                            <li>Devices will connect and sync automatically</li>
+                            <li>Changes on one device will appear on the other</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sync Status Indicator -->
+    <div id="syncStatus" class="sync-status" style="display: none;">
+        <i class="fas fa-sync"></i> <span id="syncMessage">Syncing...</span>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

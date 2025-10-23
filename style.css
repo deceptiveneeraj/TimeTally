@@ -1,0 +1,440 @@
+:root {
+    --primary-color: #4a90e2;
+    --secondary-color: #f39c12;
+    --success-color: #2ecc71;
+    --danger-color: #e74c3c;
+    --dark-color: #2c3e50;
+    --light-bg: #f8f9fa;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding-bottom: 20px;
+}
+
+.container-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+    background: white;
+    min-height: 100vh;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+.navbar-custom {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-custom .menu-icon,
+.navbar-custom .add-icon {
+    font-size: 24px;
+    cursor: pointer;
+    transition: transform 0.3s;
+}
+
+.navbar-custom .menu-icon:hover,
+.navbar-custom .add-icon:hover {
+    transform: scale(1.1);
+}
+
+.navbar-custom .title {
+    font-size: 20px;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+}
+
+.navbar-custom .title img {
+    margin-top: -10px;
+    margin-bottom: -5px;
+    height: 50px;
+}
+
+.subject-card {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.subject-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.subject-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.percentage-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: white;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: var(--light-bg);
+    margin: 15px;
+    border-radius: 10px;
+}
+
+.calendar-nav {
+    cursor: pointer;
+    padding: 5px 15px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 5px;
+    transition: background 0.3s;
+}
+
+.calendar-nav:hover {
+    background: #357abd;
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    padding: 10px 15px;
+    font-weight: 600;
+    color: var(--dark-color);
+    text-align: center;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    padding: 0 15px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.calendar-day:hover {
+    background: var(--light-bg);
+}
+
+.calendar-day.today {
+    border: 2px solid var(--primary-color);
+}
+
+.calendar-day.present {
+    background: var(--success-color);
+    color: white;
+}
+
+.calendar-day.absent {
+    background: var(--danger-color);
+    color: white;
+}
+
+.calendar-day.halfday {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.calendar-day.holiday {
+    background: #9b59b6;
+    color: white;
+}
+
+.calendar-day.weekoff {
+    background: #34495e;
+    color: white;
+}
+
+.calendar-day.leave {
+    background: #e67e22;
+    color: white;
+}
+
+.shift-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    color: white;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.footer-stats {
+    background: white;
+    padding: 20px;
+    margin: 15px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.stat-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.stat-row:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.stat-value {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+.modal-content {
+    border-radius: 20px;
+    border: none;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px 20px 0 0;
+}
+
+.btn-custom {
+    border-radius: 10px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-custom:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.attendance-option {
+    padding: 15px;
+    margin: 10px 0;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid #ecf0f1;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.attendance-option:hover {
+    border-color: var(--primary-color);
+    background: var(--light-bg);
+}
+
+.attendance-option i {
+    font-size: 20px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #95a5a6;
+}
+
+.empty-state i {
+    font-size: 80px;
+    margin-bottom: 20px;
+}
+
+.more-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.info-card {
+    background: var(--light-bg);
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.info-label {
+    font-size: 12px;
+    color: #7f8c8d;
+    margin-bottom: 5px;
+}
+
+.info-value {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--dark-color);
+}
+
+.back-button {
+    cursor: pointer;
+    font-size: 24px;
+    color: white;
+}
+
+.submenu-option {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #ecf0f1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.submenu-option:hover {
+    background: var(--light-bg);
+}
+
+.submenu-option:last-child {
+    border-bottom: none;
+}
+
+/* Backup specific styles */
+.sync-status {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: var(--success-color);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.backup-option {
+    padding: 12px 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #ecf0f1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+}
+
+.backup-option:hover {
+    background: var(--light-bg);
+}
+
+.backup-option:last-child {
+    border-bottom: none;
+}
+
+/* QR Code Styles */
+.qr-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.qr-code {
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    display: inline-block;
+}
+
+.camera-container {
+    position: relative;
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+#qrScanner {
+    width: 100%;
+    border-radius: 15px;
+    background: black;
+}
+
+.scan-frame {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    border: 3px solid var(--primary-color);
+    border-radius: 15px;
+    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3);
+}
+
+.connection-status {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.connected {
+    background: var(--success-color);
+    color: white;
+}
+
+.disconnected {
+    background: var(--danger-color);
+    color: white;
+}
+
+.connecting {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.sync-indicator {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: var(--success-color);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 10px;
+    z-index: 1000;
+}
