@@ -8,10 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-
-    <!-- QR Code Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsQR/1.4.0/jsQR.min.js"></script>
 </head>
 <body>
     <div class="container-wrapper">
@@ -85,11 +81,6 @@
         </div>
     </div>
 
-    <!-- Connection Status Indicator -->
-    <div id="connectionStatus" class="sync-indicator" style="display: none;">
-        <i class="fas fa-link"></i> Connected
-    </div>
-
     <!-- Add Subject Modal -->
     <div class="modal fade" id="addSubjectModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
@@ -134,7 +125,7 @@
                         <i class="fas fa-adjust" style="color: var(--secondary-color);"></i>
                         <span>Half Day</span>
                     </div>
-                    <div class="attendance-option" onclick="showOvertimeInput()">
+                    <div class="attendance-option" onclick="showOvertimeModal()">
                         <i class="fas fa-clock" style="color: #3498db;"></i>
                         <span>Over Time</span>
                     </div>
@@ -212,7 +203,7 @@
                     </div>
                     <div class="attendance-option" onclick="addNote()">
                         <i class="fas fa-sticky-note" style="color: #f39c12;"></i>
-                        <span>Add Note</span>
+                        <span>Note</span>
                     </div>
                 </div>
             </div>
@@ -334,9 +325,6 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0">
-                    <div class="submenu-option" onclick="showQRSyncModal()">
-                        <i class="fas fa-qrcode"></i> QR Sync (Real-time)
-                    </div>
                     <div class="submenu-option" onclick="showBackupModal()">
                         <i class="fas fa-cloud-upload-alt"></i> Backup & Restore
                     </div>
@@ -393,66 +381,68 @@
         </div>
     </div>
 
-    <!-- QR Sync Modal -->
-    <div class="modal fade" id="qrSyncModal" tabindex="-1">
+    <!-- Note Editor Modal -->
+    <div class="modal fade" id="noteEditorModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">QR Code Sync</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" onclick="stopQRScanning()"></button>
+                    <h5 class="modal-title" id="noteEditorTitle">Edit Note</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div id="connectionInfo" class="connection-status disconnected">
-                        <i class="fas fa-unlink"></i> Not Connected
+                    <div class="mb-3">
+                        <label for="noteTextArea" class="form-label">Note for <span id="noteDate"></span>:</label>
+                        <textarea class="form-control" id="noteTextArea" rows="4" placeholder="Enter your note here..."></textarea>
                     </div>
-                    
-                    <div class="d-flex gap-2 mb-3">
-                        <button class="btn btn-primary btn-custom flex-fill" onclick="showGenerateQR()">
-                            <i class="fas fa-qrcode"></i> Generate QR
-                        </button>
-                        <button class="btn btn-success btn-custom flex-fill" onclick="startQRScanning()">
-                            <i class="fas fa-camera"></i> Scan QR
-                        </button>
+                    <div class="form-text">
+                        <i class="fas fa-info-circle"></i> This note will be visible when you click on the date.
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger btn-custom" onclick="deleteNote()" id="deleteNoteBtn">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary btn-custom" onclick="saveNote()">
+                        <i class="fas fa-save"></i> Save Note
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                    <!-- Generate QR Section -->
-                    <div id="generateSection" style="display: none;">
-                        <div class="qr-container">
-                            <h6>Scan this QR with another device:</h6>
-                            <div id="qrCodeDisplay" class="qr-code"></div>
-                            <p class="text-muted mt-2">This QR contains your current data for synchronization</p>
-                            <button class="btn btn-secondary btn-sm" onclick="refreshQRCode()">
-                                <i class="fas fa-sync"></i> Refresh QR
-                            </button>
-                        </div>
+    <!-- Overtime Editor Modal -->
+    <div class="modal fade" id="overtimeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="overtimeEditorTitle">Edit Overtime</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="overtimeInput" class="form-label">Overtime Hours for <span id="overtimeDate"></span>:</label>
+                        <input type="number" class="form-control" id="overtimeInput" min="0" max="24" step="0.5" placeholder="Enter overtime hours">
                     </div>
-
-                    <!-- Scan QR Section -->
-                    <div id="scanSection" style="display: none;">
-                        <div class="camera-container">
-                            <video id="qrScanner" style="display: none;"></video>
-                            <canvas id="qrCanvas" style="display: none;"></canvas>
-                            <div class="scan-frame"></div>
-                            <div class="text-center mt-3">
-                                <p>Point camera at QR code to scan</p>
-                                <button class="btn btn-danger btn-sm" onclick="stopQRScanning()">
-                                    <i class="fas fa-stop"></i> Stop Scanning
-                                </button>
-                            </div>
-                        </div>
+                    <div class="form-text">
+                        <i class="fas fa-info-circle"></i> Enter overtime hours (0.5 for 30 minutes, 1 for 1 hour, etc.)
                     </div>
-
-                    <!-- Instructions -->
-                    <div id="instructionsSection">
-                        <h6>How to Sync:</h6>
-                        <ol style="text-align: left; font-size: 14px;">
-                            <li><strong>Device A</strong>: Click "Generate QR"</li>
-                            <li><strong>Device B</strong>: Click "Scan QR"</li>
-                            <li>Point Device B's camera at Device A's QR code</li>
-                            <li>Devices will connect and sync automatically</li>
-                            <li>Changes on one device will appear on the other</li>
-                        </ol>
+                    <div class="current-shift-info mt-3 p-2 bg-light rounded">
+                        <small><strong>Current Shift:</strong> <span id="currentShiftDisplay">None</span></small>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger btn-custom" onclick="deleteOvertime()" id="deleteOvertimeBtn">
+                        <i class="fas fa-trash"></i> Delete OT
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-custom" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary btn-custom" onclick="saveOvertime()">
+                        <i class="fas fa-save"></i> Save OT
+                    </button>
                 </div>
             </div>
         </div>

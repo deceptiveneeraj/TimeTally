@@ -196,6 +196,31 @@ body {
     border-radius: 3px;
 }
 
+.note-indicator {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: #f39c12;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 4px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-day.present .note-indicator,
+.calendar-day.absent .note-indicator,
+.calendar-day.halfday .note-indicator,
+.calendar-day.holiday .note-indicator,
+.calendar-day.weekoff .note-indicator,
+.calendar-day.leave .note-indicator {
+    background: rgba(255, 255, 255, 0.9);
+    color: #f39c12;
+}
+
 .footer-stats {
     background: white;
     padding: 20px;
@@ -364,77 +389,105 @@ body {
     border-bottom: none;
 }
 
-/* QR Code Styles */
-.qr-container {
-    text-align: center;
-    padding: 20px;
-}
-
-.qr-code {
-    margin: 20px auto;
-    padding: 20px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    display: inline-block;
-}
-
-.camera-container {
-    position: relative;
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-#qrScanner {
-    width: 100%;
-    border-radius: 15px;
-    background: black;
-}
-
-.scan-frame {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 200px;
-    height: 200px;
-    border: 3px solid var(--primary-color);
-    border-radius: 15px;
-    box-shadow: 0 0 0 1000px rgba(0, 0, 0, 0.3);
-}
-
-.connection-status {
-    padding: 10px;
-    margin: 10px 0;
+/* Note Editor Styles */
+#noteTextArea {
     border-radius: 10px;
-    text-align: center;
+    border: 2px solid #ecf0f1;
+    resize: vertical;
+    min-height: 100px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    padding: 12px;
+    font-size: 14px;
+}
+
+#noteTextArea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+.form-text {
+    font-size: 12px;
+    color: #7f8c8d;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 8px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 8px;
+}
+/* Overtime Styles */
+.overtime-indicator {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 9px;
+    color: #e74c3c;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 1px 4px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 600;
 }
 
-.connected {
-    background: var(--success-color);
-    color: white;
+.calendar-day.present .overtime-indicator,
+.calendar-day.absent .overtime-indicator,
+.calendar-day.halfday .overtime-indicator,
+.calendar-day.holiday .overtime-indicator,
+.calendar-day.weekoff .overtime-indicator,
+.calendar-day.leave .overtime-indicator {
+    background: rgba(255, 255, 255, 0.95);
+    color: #e74c3c;
 }
 
-.disconnected {
-    background: var(--danger-color);
+.shift-overtime-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 8px;
+    background: rgba(231, 76, 60, 0.9);
     color: white;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
 }
 
-.connecting {
-    background: var(--secondary-color);
-    color: white;
+.current-shift-info {
+    border-left: 4px solid var(--primary-color);
 }
 
-.sync-indicator {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    background: var(--success-color);
+#overtimeInput {
+    border-radius: 10px;
+    border: 2px solid #ecf0f1;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+}
+
+#overtimeInput:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
+}
+
+/* Combined shift and overtime display */
+.combined-shift-ot {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    font-size: 8px;
+    background: linear-gradient(135deg, #3498db, #e74c3c);
     color: white;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 10px;
-    z-index: 1000;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 1px;
 }

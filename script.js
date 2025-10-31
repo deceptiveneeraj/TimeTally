@@ -5,191 +5,6 @@ let currentYear = new Date().getFullYear();
 let selectedDate = null;
 let attendanceData = {};
 
-// QR Sync Variables
-let qrConnection = null;
-let isConnected = false;
-let qrScanning = false;
-let videoStream = null;
-
-// ==================== QR SYNC FUNCTIONS ====================
-
-function showQRSyncModal() {
-    const modal = new bootstrap.Modal(document.getElementById('qrSyncModal'));
-    modal.show();
-    updateConnectionStatus();
-    bootstrap.Modal.getInstance(document.getElementById('mainMenuModal')).hide();
-}
-
-function showGenerateQR() {
-    document.getElementById('generateSection').style.display = 'block';
-    document.getElementById('scanSection').style.display = 'none';
-    document.getElementById('instructionsSection').style.display = 'none';
-    generateQRCode();
-}
-
-function generateQRCode() {
-    const appData = {
-        subjects: subjects,
-        attendanceData: attendanceData,
-        timestamp: Date.now(),
-        deviceId: generateDeviceId(),
-        type: 'sync_request'
-    };
-
-    const dataStr = JSON.stringify(appData);
-    const qr = qrcode(0, 'M');
-    qr.addData(dataStr);
-    qr.make();
-
-    document.getElementById('qrCodeDisplay').innerHTML = qr.createImgTag(5);
-    showSyncStatus('QR Code Generated - Ready for Scan');
-}
-
-function refreshQRCode() {
-    generateQRCode();
-    showSyncStatus('QR Code Refreshed');
-}
-
-function startQRScanning() {
-    document.getElementById('generateSection').style.display = 'none';
-    document.getElementById('scanSection').style.display = 'block';
-    document.getElementById('instructionsSection').style.display = 'none';
-
-    const video = document.getElementById('qrScanner');
-    const canvas = document.getElementById('qrCanvas');
-    const context = canvas.getContext('2d');
-
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-        .then(function (stream) {
-            videoStream = stream;
-            video.srcObject = stream;
-            video.setAttribute("playsinline", true);
-            video.play();
-            video.style.display = 'block';
-            qrScanning = true;
-            requestAnimationFrame(tick);
-            showSyncStatus('Camera Started - Scan QR Code');
-        })
-        .catch(function (err) {
-            console.error("Error accessing camera:", err);
-            alert("Cannot access camera. Please check permissions.");
-        });
-
-    function tick() {
-        if (!qrScanning) return;
-
-        if (video.readyState === video.HAVE_ENOUGH_DATA) {
-            canvas.height = video.videoHeight;
-            canvas.width = video.videoWidth;
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-            const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-            const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-            if (code) {
-                handleScannedQR(code.data);
-            }
-        }
-
-        requestAnimationFrame(tick);
-    }
-}
-
-function stopQRScanning() {
-    qrScanning = false;
-    if (videoStream) {
-        videoStream.getTracks().forEach(track => track.stop());
-        videoStream = null;
-    }
-    const video = document.getElementById('qrScanner');
-    video.style.display = 'none';
-    document.getElementById('scanSection').style.display = 'none';
-    document.getElementById('instructionsSection').style.display = 'block';
-}
-
-function handleScannedQR(data) {
-    try {
-        const scannedData = JSON.parse(data);
-
-        if (scannedData.type === 'sync_request') {
-            // Merge data from scanned QR
-            mergeData(scannedData);
-            stopQRScanning();
-
-            // Show success and update UI
-            showSyncStatus('Data Synced Successfully!');
-            updateConnectionStatus('connected');
-
-            // Close modal after success
-            setTimeout(() => {
-                bootstrap.Modal.getInstance(document.getElementById('qrSyncModal')).hide();
-            }, 2000);
-        }
-    } catch (e) {
-        console.error('Invalid QR code:', e);
-        showSyncStatus('Invalid QR Code', 'error');
-    }
-}
-
-function mergeData(newData) {
-    // Merge subjects
-    const existingSubjectIds = new Set(subjects.map(s => s.id));
-    newData.subjects.forEach(subject => {
-        if (!existingSubjectIds.has(subject.id)) {
-            subjects.push(subject);
-        }
-    });
-
-    // Merge attendance data
-    Object.keys(newData.attendanceData).forEach(subjectId => {
-        if (!attendanceData[subjectId]) {
-            attendanceData[subjectId] = {};
-        }
-
-        Object.keys(newData.attendanceData[subjectId]).forEach(monthKey => {
-            if (!attendanceData[subjectId][monthKey]) {
-                attendanceData[subjectId][monthKey] = {};
-            }
-
-            Object.keys(newData.attendanceData[subjectId][monthKey]).forEach(day => {
-                attendanceData[subjectId][monthKey][day] = {
-                    ...attendanceData[subjectId][monthKey][day],
-                    ...newData.attendanceData[subjectId][monthKey][day]
-                };
-            });
-        });
-    });
-
-    saveToLocalStorage();
-    renderSubjects();
-
-    if (currentSubject) {
-        renderCalendar();
-        updateStats();
-    }
-}
-
-function updateConnectionStatus(status = 'disconnected') {
-    const statusEl = document.getElementById('connectionInfo');
-    const indicatorEl = document.getElementById('connectionStatus');
-
-    isConnected = status === 'connected';
-
-    if (status === 'connected') {
-        statusEl.className = 'connection-status connected';
-        statusEl.innerHTML = '<i class="fas fa-link"></i> Connected - Real-time Sync Active';
-        indicatorEl.style.display = 'block';
-    } else {
-        statusEl.className = 'connection-status disconnected';
-        statusEl.innerHTML = '<i class="fas fa-unlink"></i> Not Connected';
-        indicatorEl.style.display = 'none';
-    }
-}
-
-function generateDeviceId() {
-    return 'device_' + Math.random().toString(36).substr(2, 9);
-}
-
 // ==================== BACKUP & SYNC FUNCTIONS ====================
 
 function showSyncStatus(message, type = 'success') {
@@ -220,13 +35,7 @@ function saveToLocalStorage() {
         version: '1.0'
     };
     localStorage.setItem('attendanceAppData', JSON.stringify(appData));
-
-    // If connected, we could sync to other devices here
-    if (isConnected) {
-        showSyncStatus('Auto-saved & Synced');
-    } else {
-        showSyncStatus('Auto-saved');
-    }
+    showSyncStatus('Auto-saved');
 }
 
 function loadFromLocalStorage() {
@@ -330,7 +139,7 @@ function clearAllData() {
 }
 
 function showAutoBackupInfo() {
-    alert('🔄 Auto Save Feature:\n\n• Your data is automatically saved every 30 seconds\n• Works completely offline\n• No setup required\n• Perfect for single device use\n\nFor cross-device sync, use QR Sync or Export/Import feature.');
+    alert('🔄 Auto Save Feature:\n\n• Your data is automatically saved every 30 seconds\n• Works completely offline\n• No setup required\n• Perfect for single device use\n\nFor cross-device sync, use Export/Import feature.');
 }
 
 // ==================== MENU FUNCTIONS ====================
@@ -351,12 +160,10 @@ function showSettings() {
 }
 
 function showHelp() {
-    alert('📋 How to Sync Across Devices:\n\n🔷 QR CODE SYNC (Recommended):\n1. On Device A: Menu → QR Sync → Generate QR\n2. On Device B: Menu → QR Sync → Scan QR\n3. Point Device B camera at Device A QR code\n4. Instantly connected! Changes sync automatically\n\n🔷 FILE BACKUP:\n1. On Device A: Menu → Backup → Export Data\n2. Transfer file (email/WhatsApp/Drive)\n3. On Device B: Menu → Backup → Import Data\n4. Select the backup file\n\n💡 Tip: Use QR Sync for quick transfers when devices are together!');
+    alert('📋 How to Use Attendance Manager:\n\n🔷 ADDING SUBJECTS:\n1. Click the + button on the home screen\n2. Enter subject name (Math, Job Name, Company Name, etc.)\n3. Click ADD\n\n🔷 MARKING ATTENDANCE:\n1. Click on a subject to open its calendar\n2. Click on any date to mark attendance\n3. Choose from options: Present, Absent, Half Day, etc.\n\n🔷 BACKUP & RESTORE:\n1. Menu → Backup & Restore\n2. Export Data: Download backup file\n3. Import Data: Upload backup file to restore\n\n💡 Tip: Your data is automatically saved every 30 seconds!');
 }
 
-// ==================== EXISTING ATTENDANCE FUNCTIONS ====================
-// [All your existing attendance functions remain exactly the same]
-// Only adding saveToLocalStorage() calls to each function that modifies data
+// ==================== ATTENDANCE FUNCTIONS ====================
 
 function showAddSubjectModal() {
     const modal = new bootstrap.Modal(document.getElementById('addSubjectModal'));
@@ -408,7 +215,8 @@ function calculatePercentage(subjectId) {
 
     let present = 0, total = 0;
     Object.values(monthData).forEach(day => {
-        if (day.status && day.status !== 'holiday' && day.status !== 'weekoff') {
+        // Exclude holidays, weekoffs, and leaves from calculation
+        if (day.status && day.status !== 'holiday' && day.status !== 'weekoff' && day.status !== 'leave') {
             total++;
             if (day.status === 'present') present++;
             if (day.status === 'halfday') present += 0.5;
@@ -479,16 +287,55 @@ function renderCalendar() {
             dayEl.classList.add(dayData.status);
         }
 
-        if (dayData.shift) {
+        // Handle shift and overtime display
+        const hasShift = dayData.shift;
+        const hasOvertime = dayData.overtime && dayData.overtime > 0;
+
+        if (hasShift && hasOvertime) {
+            // Combined shift + overtime badge
+            const combinedBadge = document.createElement('span');
+            combinedBadge.className = 'combined-shift-ot';
+            combinedBadge.textContent = `${dayData.shift}+OT`;
+            combinedBadge.title = `${getShiftName(dayData.shift)} Shift + ${dayData.overtime} hours OT`;
+            dayEl.appendChild(combinedBadge);
+        } else if (hasShift) {
+            // Only shift badge
             const badge = document.createElement('span');
             badge.className = 'shift-badge';
             badge.textContent = dayData.shift;
+            badge.title = `${getShiftName(dayData.shift)} Shift`;
             dayEl.appendChild(badge);
+        } else if (hasOvertime) {
+            // Only overtime indicator at bottom
+            const overtimeIndicator = document.createElement('div');
+            overtimeIndicator.className = 'overtime-indicator';
+            overtimeIndicator.textContent = `${dayData.overtime}h`;
+            overtimeIndicator.title = `${dayData.overtime} hours overtime`;
+            dayEl.appendChild(overtimeIndicator);
+        }
+
+        // Show note indicator if note exists
+        if (dayData.note) {
+            const noteIndicator = document.createElement('div');
+            noteIndicator.className = 'note-indicator';
+            noteIndicator.innerHTML = '<i class="fas fa-sticky-note"></i>';
+            noteIndicator.title = dayData.note;
+            dayEl.appendChild(noteIndicator);
         }
 
         dayEl.onclick = () => showAttendanceModal(day);
         container.appendChild(dayEl);
     }
+}
+
+function getShiftName(shiftCode) {
+    const shiftNames = {
+        'M': 'Morning',
+        'A': 'Afternoon', 
+        'N': 'Night',
+        'G': 'General'
+    };
+    return shiftNames[shiftCode] || 'Unknown';
 }
 
 function showAttendanceModal(day) {
@@ -517,25 +364,80 @@ function markAttendance(status) {
     saveToLocalStorage();
 }
 
-function showOvertimeInput() {
-    const hours = prompt("Enter overtime hours:");
-    if (hours !== null && !isNaN(hours) && hours >= 0) {
-        if (!attendanceData[currentSubject.id]) {
-            attendanceData[currentSubject.id] = {};
-        }
-        const monthKey = `${currentYear}-${currentMonth}`;
-        if (!attendanceData[currentSubject.id][monthKey]) {
-            attendanceData[currentSubject.id][monthKey] = {};
-        }
-        if (!attendanceData[currentSubject.id][monthKey][selectedDate]) {
-            attendanceData[currentSubject.id][monthKey][selectedDate] = {};
-        }
+// ==================== ENHANCED OVERTIME FUNCTIONS ====================
 
-        attendanceData[currentSubject.id][monthKey][selectedDate].overtime = parseFloat(hours);
-        bootstrap.Modal.getInstance(document.getElementById('attendanceModal')).hide();
-        renderCalendar();
-        updateStats();
-        saveToLocalStorage();
+function showOvertimeModal() {
+    const monthKey = `${currentYear}-${currentMonth}`;
+    const existingOvertime = attendanceData[currentSubject.id]?.[monthKey]?.[selectedDate]?.overtime || '';
+    const currentShift = attendanceData[currentSubject.id]?.[monthKey]?.[selectedDate]?.shift || 'None';
+
+    // Set up the overtime editor modal
+    document.getElementById('overtimeEditorTitle').textContent = existingOvertime ? 'Edit Overtime' : 'Add Overtime';
+    document.getElementById('overtimeDate').textContent = `${selectedDate}/${currentMonth + 1}/${currentYear}`;
+    document.getElementById('overtimeInput').value = existingOvertime;
+    document.getElementById('currentShiftDisplay').textContent = getShiftName(currentShift);
+    
+    // Show/hide delete button based on whether overtime exists
+    document.getElementById('deleteOvertimeBtn').style.display = existingOvertime ? 'block' : 'none';
+    
+    // Show the modal
+    bootstrap.Modal.getInstance(document.getElementById('attendanceModal')).hide();
+    const modal = new bootstrap.Modal(document.getElementById('overtimeModal'));
+    modal.show();
+}
+
+function saveOvertime() {
+    const overtimeValue = parseFloat(document.getElementById('overtimeInput').value);
+    const monthKey = `${currentYear}-${currentMonth}`;
+    
+    if (!attendanceData[currentSubject.id]) {
+        attendanceData[currentSubject.id] = {};
+    }
+    if (!attendanceData[currentSubject.id][monthKey]) {
+        attendanceData[currentSubject.id][monthKey] = {};
+    }
+    if (!attendanceData[currentSubject.id][monthKey][selectedDate]) {
+        attendanceData[currentSubject.id][monthKey][selectedDate] = {};
+    }
+
+    if (isNaN(overtimeValue) || overtimeValue < 0) {
+        alert('Please enter a valid overtime value (0 or greater)');
+        return;
+    }
+
+    if (overtimeValue === 0) {
+        // If overtime is 0, delete it
+        delete attendanceData[currentSubject.id][monthKey][selectedDate].overtime;
+        showSyncStatus('Overtime removed', 'warning');
+    } else {
+        // Save the overtime
+        attendanceData[currentSubject.id][monthKey][selectedDate].overtime = overtimeValue;
+        
+        // Automatically mark as present if not already set
+        if (!attendanceData[currentSubject.id][monthKey][selectedDate].status) {
+            attendanceData[currentSubject.id][monthKey][selectedDate].status = 'present';
+        }
+        
+        showSyncStatus('Overtime saved successfully');
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById('overtimeModal')).hide();
+    renderCalendar();
+    updateStats();
+    saveToLocalStorage();
+}
+
+function deleteOvertime() {
+    if (confirm("⚠️ Are you sure you want to delete overtime for this date?")) {
+        const monthKey = `${currentYear}-${currentMonth}`;
+        if (attendanceData[currentSubject.id]?.[monthKey]?.[selectedDate]) {
+            delete attendanceData[currentSubject.id][monthKey][selectedDate].overtime;
+            bootstrap.Modal.getInstance(document.getElementById('overtimeModal')).hide();
+            renderCalendar();
+            updateStats();
+            saveToLocalStorage();
+            showSyncStatus('Overtime deleted', 'warning');
+        }
     }
 }
 
@@ -557,7 +459,19 @@ function setShift(shift) {
         attendanceData[currentSubject.id][monthKey][selectedDate] = {};
     }
 
+    // Set the shift
     attendanceData[currentSubject.id][monthKey][selectedDate].shift = shift;
+    
+    // Automatically mark as present if a shift is selected (not cleared)
+    if (shift !== '') {
+        attendanceData[currentSubject.id][monthKey][selectedDate].status = 'present';
+    } else {
+        // If clearing shift, also clear overtime if no status
+        if (!attendanceData[currentSubject.id][monthKey][selectedDate].status) {
+            delete attendanceData[currentSubject.id][monthKey][selectedDate].overtime;
+        }
+    }
+    
     bootstrap.Modal.getInstance(document.getElementById('shiftModal')).hide();
     renderCalendar();
     updateStats();
@@ -597,24 +511,67 @@ function markLeave(leaveType) {
     saveToLocalStorage();
 }
 
-function addNote() {
-    const note = prompt("Enter note:");
-    if (note !== null) {
-        if (!attendanceData[currentSubject.id]) {
-            attendanceData[currentSubject.id] = {};
-        }
-        const monthKey = `${currentYear}-${currentMonth}`;
-        if (!attendanceData[currentSubject.id][monthKey]) {
-            attendanceData[currentSubject.id][monthKey] = {};
-        }
-        if (!attendanceData[currentSubject.id][monthKey][selectedDate]) {
-            attendanceData[currentSubject.id][monthKey][selectedDate] = {};
-        }
+// ==================== ENHANCED NOTE FUNCTIONS ====================
 
-        attendanceData[currentSubject.id][monthKey][selectedDate].note = note;
-        bootstrap.Modal.getInstance(document.getElementById('moreOptionsModal')).hide();
-        alert("Note added successfully!");
-        saveToLocalStorage();
+function addNote() {
+    const monthKey = `${currentYear}-${currentMonth}`;
+    const existingNote = attendanceData[currentSubject.id]?.[monthKey]?.[selectedDate]?.note || '';
+
+    // Set up the note editor modal
+    document.getElementById('noteEditorTitle').textContent = existingNote ? 'Edit Note' : 'Add Note';
+    document.getElementById('noteDate').textContent = `${selectedDate}/${currentMonth + 1}/${currentYear}`;
+    document.getElementById('noteTextArea').value = existingNote;
+    
+    // Show/hide delete button based on whether note exists
+    document.getElementById('deleteNoteBtn').style.display = existingNote ? 'block' : 'none';
+    
+    // Show the modal
+    bootstrap.Modal.getInstance(document.getElementById('moreOptionsModal')).hide();
+    const modal = new bootstrap.Modal(document.getElementById('noteEditorModal'));
+    modal.show();
+}
+
+function saveNote() {
+    const noteText = document.getElementById('noteTextArea').value.trim();
+    const monthKey = `${currentYear}-${currentMonth}`;
+    
+    if (!attendanceData[currentSubject.id]) {
+        attendanceData[currentSubject.id] = {};
+    }
+    if (!attendanceData[currentSubject.id][monthKey]) {
+        attendanceData[currentSubject.id][monthKey] = {};
+    }
+    if (!attendanceData[currentSubject.id][monthKey][selectedDate]) {
+        attendanceData[currentSubject.id][monthKey][selectedDate] = {};
+    }
+
+    if (noteText === '') {
+        // If note is empty, delete it
+        delete attendanceData[currentSubject.id][monthKey][selectedDate].note;
+        showSyncStatus('Note removed', 'warning');
+    } else {
+        // Save the note
+        attendanceData[currentSubject.id][monthKey][selectedDate].note = noteText;
+        showSyncStatus('Note saved successfully');
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById('noteEditorModal')).hide();
+    renderCalendar();
+    updateStats();
+    saveToLocalStorage();
+}
+
+function deleteNote() {
+    if (confirm("⚠️ Are you sure you want to delete this note?")) {
+        const monthKey = `${currentYear}-${currentMonth}`;
+        if (attendanceData[currentSubject.id]?.[monthKey]?.[selectedDate]) {
+            delete attendanceData[currentSubject.id][monthKey][selectedDate].note;
+            bootstrap.Modal.getInstance(document.getElementById('noteEditorModal')).hide();
+            renderCalendar();
+            updateStats();
+            saveToLocalStorage();
+            showSyncStatus('Note deleted', 'warning');
+        }
     }
 }
 
@@ -735,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Show welcome message for first-time users
     if (!localStorage.getItem('attendanceAppData')) {
         setTimeout(() => {
-            if (confirm('🎉 Welcome to Attendance Manager!\n\nWould you like to see how to sync data across devices?')) {
+            if (confirm('🎉 Welcome to Attendance Manager!\n\nWould you like to see how to use the app?')) {
                 showHelp();
             }
         }, 1000);
