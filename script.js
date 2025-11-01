@@ -358,7 +358,13 @@ function markAttendance(status) {
 
     attendanceData[currentSubject.id][monthKey][selectedDate].status = status;
 
-    bootstrap.Modal.getInstance(document.getElementById('attendanceModal')).hide();
+    // Close all possible modals
+    const attendanceModal = bootstrap.Modal.getInstance(document.getElementById('attendanceModal'));
+    const moreOptionsModal = bootstrap.Modal.getInstance(document.getElementById('moreOptionsModal'));
+    
+    if (attendanceModal) attendanceModal.hide();
+    if (moreOptionsModal) moreOptionsModal.hide();
+    
     renderCalendar();
     updateStats();
     saveToLocalStorage();
