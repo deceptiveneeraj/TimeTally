@@ -1,21 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Tally</title>
-    <link rel="icon" type="image/png" href="./assests/favicon.png">
+
+    <!-- Standard favicon -->
+    <link rel="icon" type="image/png" href="./assets/favicon.png">
+
+    <!-- For iPhone/iPad -->
+    <link rel="apple-touch-icon" href="./assets/favicon.png">
+
+    <!-- For Android & Progressive Web Apps -->
+    <link rel="manifest" href="./manifest.json">
+
+    <!-- Optional: Shortcut icon fallback -->
+    <link rel="shortcut icon" href="./assets/favicon.png">
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container-wrapper">
         <!-- Home Page -->
         <div id="homePage">
             <div class="navbar-custom">
                 <i class="fas fa-bars menu-icon" onclick="showMainMenu()"></i>
-                <div class="title"><img src="./assests/logo.png" alt="Time Tally"></div>
+                <div class="title"><img src="./assets/logo.png" alt="Time Tally"></div>
                 <i class="fas fa-plus add-icon" onclick="showAddSubjectModal()"></i>
             </div>
             <div id="subjectsList">
@@ -34,7 +48,7 @@
                 <div class="title" id="detailTitle"></div>
                 <i class="fas fa-ellipsis-v" style="cursor: pointer;" onclick="showOptionsMenu()"></i>
             </div>
-            
+
             <div class="calendar-header">
                 <div class="calendar-nav" onclick="changeMonth(-1)">Prev</div>
                 <div id="currentMonth" style="font-weight: 600; font-size: 16px;"></div>
@@ -90,7 +104,8 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" class="form-control" id="subjectInput" placeholder="Math, Job Name, Company Name, etc.">
+                    <input type="text" class="form-control" id="subjectInput"
+                        placeholder="Math, Job Name, Company Name, etc.">
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary btn-custom" data-bs-dismiss="modal">
@@ -426,14 +441,16 @@
                         <i class="fas fa-sync" style="color: #9b59b6;"></i>
                         <div>
                             <div style="font-weight: 600;">Auto Save</div>
-                            <div style="font-size: 12px; color: #7f8c8d;">Data saves automatically every 30 seconds</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">Data saves automatically every 30 seconds
+                            </div>
                         </div>
                     </div>
                     <div class="backup-option" onclick="clearAllData()">
                         <i class="fas fa-trash" style="color: #e74c3c;"></i>
                         <div>
                             <div style="font-weight: 600;">Clear All Data</div>
-                            <div style="font-size: 12px; color: #7f8c8d;">Delete all subjects and attendance records</div>
+                            <div style="font-size: 12px; color: #7f8c8d;">Delete all subjects and attendance records
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -452,7 +469,8 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label for="noteTextArea" class="form-label">Note for <span id="noteDate"></span>:</label>
-                        <textarea class="form-control" id="noteTextArea" rows="4" placeholder="Enter your note here..."></textarea>
+                        <textarea class="form-control" id="noteTextArea" rows="4"
+                            placeholder="Enter your note here..."></textarea>
                     </div>
                     <div class="form-text">
                         <i class="fas fa-info-circle"></i> This note will be visible when you click on the date.
@@ -483,8 +501,10 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="overtimeInput" class="form-label">Overtime Hours for <span id="overtimeDate"></span>:</label>
-                        <input type="number" class="form-control" id="overtimeInput" min="0" max="24" step="0.5" placeholder="Enter overtime hours">
+                        <label for="overtimeInput" class="form-label">Overtime Hours for <span
+                                id="overtimeDate"></span>:</label>
+                        <input type="number" class="form-control" id="overtimeInput" min="0" max="24" step="0.5"
+                            placeholder="Enter overtime hours">
                     </div>
                     <div class="form-text">
                         <i class="fas fa-info-circle"></i> Enter overtime hours (0.5 for 30 minutes, 1 for 1 hour, etc.)
@@ -494,7 +514,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-danger btn-custom" onclick="deleteOvertime()" id="deleteOvertimeBtn">
+                    <button type="button" class="btn btn-danger btn-custom" onclick="deleteOvertime()"
+                        id="deleteOvertimeBtn">
                         <i class="fas fa-trash"></i> Delete OT
                     </button>
                     <button type="button" class="btn btn-secondary btn-custom" data-bs-dismiss="modal">
@@ -516,4 +537,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
     <script src="script.js"></script>
 </body>
+
 </html>
