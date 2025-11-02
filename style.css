@@ -20,6 +20,7 @@ body {
     background: white;
     min-height: 100vh;
     box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+    padding: 0;
 }
 
 .navbar-custom {
@@ -52,22 +53,23 @@ body {
 }
 
 .navbar-custom .title img {
-    margin-top: -10px;
-    margin-bottom: -5px;
+    margin-top: -5px;
+    margin-bottom: 0px;
     height: 50px;
 }
 
 .subject-card {
     background: white;
     border-radius: 15px;
-    padding: 20px;
+    padding: 12px;
     margin: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(255, 5, 0, 0.5);
     display: flex;
     justify-content: space-between;
     align-items: center;
     cursor: pointer;
     transition: transform 0.3s, box-shadow 0.3s;
+    position: relative;
 }
 
 .subject-card:hover {
@@ -75,21 +77,50 @@ body {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-.subject-name {
+.subject-card-content {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.subject-menu-icon {
     font-size: 18px;
+    color: #7f8c8d;
+    cursor: pointer;
+    padding: 8px;
+    transition: color 0.3s, transform 0.3s;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.subject-menu-icon:hover {
+    color: var(--primary-color);
+    transform: scale(1.1);
+    background: rgba(255, 255, 255, 1);
+}
+
+.subject-name {
+    margin-left: 10px;
+    font-size: 16px;
     font-weight: 600;
     color: var(--dark-color);
 }
 
 .percentage-circle {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 14px;
+    font-size: 13px;
     color: white;
 }
 
@@ -97,19 +128,21 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding: 12px 15px;
     background: var(--light-bg);
-    margin: 15px;
-    border-radius: 10px;
+    margin: 10px;
+    border-radius: 8px;
+    font-size: 14px;
 }
 
 .calendar-nav {
     cursor: pointer;
-    padding: 5px 15px;
+    padding: 4px 12px;
     background: var(--primary-color);
     color: white;
-    border-radius: 5px;
+    border-radius: 4px;
     transition: background 0.3s;
+    font-size: 12px;
 }
 
 .calendar-nav:hover {
@@ -119,18 +152,21 @@ body {
 .weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 5px;
-    padding: 10px 15px;
+    gap: 4px;
+    padding: 8px 10px;
     font-weight: 600;
     color: var(--dark-color);
     text-align: center;
+    font-size: 11px;
 }
 
 .calendar-days {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-    padding: 0 15px;
+    gap: 4px;
+    padding: 0 10px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .calendar-day {
@@ -139,16 +175,22 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: 10px;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s;
     position: relative;
     font-weight: 500;
-    font-size: 14px;
+    font-size: 13px;
+    background: white;
+    border: 1px solid #ecf0f1;
+    padding: 2px;
+    margin: 0;
+    min-height: 40px;
 }
 
 .calendar-day:hover {
     background: var(--light-bg);
+    border-color: var(--primary-color);
 }
 
 .calendar-day.today {
@@ -158,82 +200,147 @@ body {
 .calendar-day.present {
     background: var(--success-color);
     color: white;
+    border-color: var(--success-color);
 }
 
 .calendar-day.absent {
     background: var(--danger-color);
     color: white;
+    border-color: var(--danger-color);
 }
 
 .calendar-day.halfday {
     background: var(--secondary-color);
     color: white;
+    border-color: var(--secondary-color);
 }
 
-.calendar-day.holiday {
-    background: #9b59b6;
-    color: white;
-}
-
-.calendar-day.weekoff {
-    background: #34495e;
-    color: white;
-}
-
+.calendar-day.holiday,
+.calendar-day.weekoff,
 .calendar-day.leave {
-    background: #e67e22;
-    color: white;
+    background: white;
+    color: var(--dark-color);
+    border-color: #ecf0f1;
 }
 
 .shift-badge {
     position: absolute;
-    top: 2px;
-    right: 2px;
-    font-size: 8px;
+    top: 1px;
+    right: 1px;
+    font-size: 7px;
     background: rgba(0, 0, 0, 0.3);
     color: white;
-    padding: 2px 4px;
-    border-radius: 3px;
+    padding: 1px 2px;
+    border-radius: 2px;
+    line-height: 1.1;
 }
 
-.note-indicator {
+.status-indicator {
     position: absolute;
-    bottom: 2px;
+    bottom: 1px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 10px;
-    color: #f39c12;
-    background: rgba(255, 255, 255, 0.9);
-    padding: 2px 4px;
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 7px;
+    color: white;
+    padding: 1px 3px;
+    border-radius: 2px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    max-width: 95%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.1;
 }
 
-.calendar-day.present .note-indicator,
-.calendar-day.absent .note-indicator,
-.calendar-day.halfday .note-indicator,
-.calendar-day.holiday .note-indicator,
-.calendar-day.weekoff .note-indicator,
-.calendar-day.leave .note-indicator {
-    background: rgba(255, 255, 255, 0.9);
-    color: #f39c12;
+.status-indicator.holiday {
+    background: #9b59b6;
+}
+
+.status-indicator.weekoff {
+    background: #34495e;
+}
+
+.status-indicator.note {
+    background: #f39c12;
+    color: white;
+}
+
+.status-indicator.overtime {
+    background: #e74c3c;
+    color: white;
+}
+
+.status-indicator.combined {
+    background: linear-gradient(135deg, #9b59b6, #f39c12);
+    color: white;
+}
+
+.status-indicator.combined-wo {
+    background: linear-gradient(135deg, #34495e, #f39c12);
+    color: white;
+}
+
+.status-indicator.combined-ot {
+    background: linear-gradient(135deg, #9b59b6, #e74c3c);
+    color: white;
+}
+
+.status-indicator.combined-wo-ot {
+    background: linear-gradient(135deg, #34495e, #e74c3c);
+    color: white;
+}
+
+.status-indicator.privileged {
+    background: #9b59b6;
+}
+
+.status-indicator.casual {
+    background: #3498db;
+}
+
+.status-indicator.sick {
+    background: #e74c3c;
+}
+
+.status-indicator.earn {
+    background: #16a085;
+}
+
+.status-indicator.other {
+    background: #95a5a6;
+}
+
+.combined-shift-ot {
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    font-size: 7px;
+    background: linear-gradient(135deg, #3498db, #e74c3c);
+    color: white;
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5px;
+    line-height: 1.1;
 }
 
 .footer-stats {
     background: white;
-    padding: 20px;
-    margin: 15px;
-    border-radius: 15px;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 12px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .stat-row {
     display: flex;
     justify-content: space-between;
-    padding: 10px 0;
+    padding: 8px 0;
     border-bottom: 1px solid #ecf0f1;
+    font-size: 14px;
 }
 
 .stat-row:last-child {
@@ -354,7 +461,6 @@ body {
     border-bottom: none;
 }
 
-/* Backup specific styles */
 .sync-status {
     position: fixed;
     bottom: 10px;
@@ -389,7 +495,6 @@ body {
     border-bottom: none;
 }
 
-/* Note Editor Styles */
 #noteTextArea {
     border-radius: 10px;
     border: 2px solid #ecf0f1;
@@ -419,44 +524,6 @@ body {
     color: var(--dark-color);
     margin-bottom: 8px;
 }
-/* Overtime Styles */
-.overtime-indicator {
-    position: absolute;
-    bottom: 2px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 9px;
-    color: #e74c3c;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 1px 4px;
-    border-radius: 3px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 600;
-}
-
-.calendar-day.present .overtime-indicator,
-.calendar-day.absent .overtime-indicator,
-.calendar-day.halfday .overtime-indicator,
-.calendar-day.holiday .overtime-indicator,
-.calendar-day.weekoff .overtime-indicator,
-.calendar-day.leave .overtime-indicator {
-    background: rgba(255, 255, 255, 0.95);
-    color: #e74c3c;
-}
-
-.shift-overtime-badge {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    font-size: 8px;
-    background: rgba(231, 76, 60, 0.9);
-    color: white;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-weight: 600;
-}
 
 .current-shift-info {
     border-left: 4px solid var(--primary-color);
@@ -476,18 +543,112 @@ body {
     box-shadow: 0 0 0 0.2rem rgba(74, 144, 226, 0.25);
 }
 
-/* Combined shift and overtime display */
-.combined-shift-ot {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    font-size: 8px;
-    background: linear-gradient(135deg, #3498db, #e74c3c);
-    color: white;
-    padding: 2px 4px;
-    border-radius: 3px;
-    font-weight: 600;
+.info-section {
+    margin-bottom: 20px;
+}
+
+.info-row {
     display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    gap: 15px;
+}
+
+.info-item {
+    flex: 1;
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    gap: 1px;
+    padding: 8px 12px;
+    background: var(--light-bg);
+    border-radius: 8px;
+    border: 1px solid #e1e8ed;
+}
+
+.info-item.full-width {
+    flex: 0 0 100%;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--dark-color);
+    font-size: 14px;
+}
+
+.info-value {
+    font-weight: 700;
+    color: var(--primary-color);
+    font-size: 16px;
+    min-width: 30px;
+    text-align: right;
+}
+
+.section-divider {
+    position: relative;
+    text-align: center;
+    margin: 20px 0;
+    color: #7f8c8d;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.section-divider::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e1e8ed;
+    z-index: 1;
+}
+
+.section-divider span {
+    background: white;
+    padding: 0 15px;
+    position: relative;
+    z-index: 2;
+}
+
+@media (max-width: 380px) {
+    .calendar-day {
+        font-size: 12px;
+        min-height: 35px;
+    }
+    
+    .status-indicator {
+        font-size: 6px;
+        padding: 1px 2px;
+        max-width: 98%;
+    }
+    
+    .weekdays {
+        font-size: 10px;
+    }
+    
+    .calendar-header {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .stat-row {
+        font-size: 13px;
+    }
+}
+
+@media (min-width: 500px) {
+    .calendar-day {
+        min-height: 45px;
+    }
+}
+
+@media (max-width: 576px) {
+    .info-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .info-item {
+        width: 100%;
+    }
 }

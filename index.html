@@ -104,6 +104,29 @@
         </div>
     </div>
 
+    <!-- Subject Menu Modal -->
+    <div class="modal fade" id="subjectMenuModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Subject Options</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div class="submenu-option" onclick="renameSubject()">
+                        <i class="fas fa-edit" style="color: #3498db;"></i> Rename
+                    </div>
+                    <div class="submenu-option" onclick="resetSubjectData()">
+                        <i class="fas fa-redo" style="color: #f39c12;"></i> Reset Data
+                    </div>
+                    <div class="submenu-option" onclick="deleteSubject()">
+                        <i class="fas fa-trash" style="color: #e74c3c;"></i> Delete Subject
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Attendance Modal -->
     <div class="modal fade" id="attendanceModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -219,6 +242,10 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="attendance-option" onclick="markLeave('earn')">
+                        <i class="fas fa-star-half-alt"></i>
+                        <span>Earn Leave</span>
+                    </div>
                     <div class="attendance-option" onclick="markLeave('privileged')">
                         <i class="fas fa-star"></i>
                         <span>Privileged Leave</span>
@@ -262,53 +289,86 @@
 
     <!-- More Info Modal -->
     <div class="modal fade" id="moreInfoModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Detailed Information</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="more-info-grid">
-                        <div class="info-card">
-                            <div class="info-label">Holidays</div>
-                            <div class="info-value" id="infoHolidays">0</div>
+                    <!-- Holidays & Week Off Section -->
+                    <div class="info-section">
+                        <div class="info-row">
+                            <div class="info-item">
+                                <span class="info-label">Holidays:</span>
+                                <span class="info-value" id="infoHolidays">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Week Off:</span>
+                                <span class="info-value" id="infoWeekOffs">0</span>
+                            </div>
                         </div>
-                        <div class="info-card">
-                            <div class="info-label">Week Offs</div>
-                            <div class="info-value" id="infoWeekOffs">0</div>
+                    </div>
+
+                    <div class="section-divider">
+                        <span>Leave</span>
+                    </div>
+
+                    <!-- Leave Section -->
+                    <div class="info-section">
+                        <div class="info-row">
+                            <div class="info-item">
+                                <span class="info-label">Privileged Leave:</span>
+                                <span class="info-value" id="infoPrivileged">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Casual Leave:</span>
+                                <span class="info-value" id="infoCasual">0</span>
+                            </div>
                         </div>
-                        <div class="info-card">
-                            <div class="info-label">Privileged Leave</div>
-                            <div class="info-value" id="infoPrivileged">0</div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <span class="info-label">Sick Leave:</span>
+                                <span class="info-value" id="infoSick">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Earn Leave:</span>
+                                <span class="info-value" id="infoEarn">0</span>
+                            </div>
                         </div>
-                        <div class="info-card">
-                            <div class="info-label">Casual Leave</div>
-                            <div class="info-value" id="infoCasual">0</div>
+                        <div class="info-row">
+                            <div class="info-item full-width">
+                                <span class="info-label">Other Leave:</span>
+                                <span class="info-value" id="infoOther">0</span>
+                            </div>
                         </div>
-                        <div class="info-card">
-                            <div class="info-label">Sick Leave</div>
-                            <div class="info-value" id="infoSick">0</div>
+                    </div>
+
+                    <div class="section-divider">
+                        <span>Shift</span>
+                    </div>
+
+                    <!-- Shift Section -->
+                    <div class="info-section">
+                        <div class="info-row">
+                            <div class="info-item">
+                                <span class="info-label">Morning Shift:</span>
+                                <span class="info-value" id="infoMorning">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Afternoon Shift:</span>
+                                <span class="info-value" id="infoAfternoon">0</span>
+                            </div>
                         </div>
-                        <div class="info-card">
-                            <div class="info-label">Other Leave</div>
-                            <div class="info-value" id="infoOther">0</div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-label">Morning Shift</div>
-                            <div class="info-value" id="infoMorning">0</div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-label">Afternoon Shift</div>
-                            <div class="info-value" id="infoAfternoon">0</div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-label">Night Shift</div>
-                            <div class="info-value" id="infoNight">0</div>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-label">General Shift</div>
-                            <div class="info-value" id="infoGeneral">0</div>
+                        <div class="info-row">
+                            <div class="info-item">
+                                <span class="info-label">Night Shift:</span>
+                                <span class="info-value" id="infoNight">0</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">General Shift:</span>
+                                <span class="info-value" id="infoGeneral">0</span>
+                            </div>
                         </div>
                     </div>
                 </div>

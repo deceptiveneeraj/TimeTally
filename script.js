@@ -4,8 +4,7 @@ let currentMonth = new Date().getMonth();
 let currentYear = new Date().getFullYear();
 let selectedDate = null;
 let attendanceData = {};
-
-// ==================== BACKUP & SYNC FUNCTIONS ====================
+let selectedSubjectId = null;
 
 function showSyncStatus(message, type = 'success') {
     const statusEl = document.getElementById('syncStatus');
@@ -142,8 +141,6 @@ function showAutoBackupInfo() {
     alert('🔄 Auto Save Feature:\n\n• Your data is automatically saved every 30 seconds\n• Works completely offline\n• No setup required\n• Perfect for single device use\n\nFor cross-device sync, use Export/Import feature.');
 }
 
-// ==================== MENU FUNCTIONS ====================
-
 function showMainMenu() {
     const modal = new bootstrap.Modal(document.getElementById('mainMenuModal'));
     modal.show();
@@ -163,7 +160,53 @@ function showHelp() {
     alert('📋 How to Use Attendance Manager:\n\n🔷 ADDING SUBJECTS:\n1. Click the + button on the home screen\n2. Enter subject name (Math, Job Name, Company Name, etc.)\n3. Click ADD\n\n🔷 MARKING ATTENDANCE:\n1. Click on a subject to open its calendar\n2. Click on any date to mark attendance\n3. Choose from options: Present, Absent, Half Day, etc.\n\n🔷 BACKUP & RESTORE:\n1. Menu → Backup & Restore\n2. Export Data: Download backup file\n3. Import Data: Upload backup file to restore\n\n💡 Tip: Your data is automatically saved every 30 seconds!');
 }
 
-// ==================== ATTENDANCE FUNCTIONS ====================
+function showSubjectMenu(subjectId, event) {
+    event.stopPropagation();
+    selectedSubjectId = subjectId;
+    const modal = new bootstrap.Modal(document.getElementById('subjectMenuModal'));
+    modal.show();
+}
+
+function renameSubject() {
+    const subject = subjects.find(s => s.id === selectedSubjectId);
+    if (!subject) return;
+
+    const newName = prompt('Enter new name:', subject.name);
+    if (newName && newName.trim() !== '') {
+        subject.name = newName.trim();
+        saveToLocalStorage();
+        renderSubjects();
+        bootstrap.Modal.getInstance(document.getElementById('subjectMenuModal')).hide();
+        showSyncStatus('Subject renamed successfully');
+    }
+}
+
+function resetSubjectData() {
+    const subject = subjects.find(s => s.id === selectedSubjectId);
+    if (!subject) return;
+
+    if (confirm(`⚠️ WARNING: This will delete all attendance data for "${subject.name}".\n\nThe subject name will remain, but all attendance records will be permanently deleted.\n\nAre you sure?`)) {
+        delete attendanceData[selectedSubjectId];
+        saveToLocalStorage();
+        renderSubjects();
+        bootstrap.Modal.getInstance(document.getElementById('subjectMenuModal')).hide();
+        showSyncStatus('Subject data reset successfully', 'warning');
+    }
+}
+
+function deleteSubject() {
+    const subject = subjects.find(s => s.id === selectedSubjectId);
+    if (!subject) return;
+
+    if (confirm(`⚠️ WARNING: This will permanently delete "${subject.name}" and all its attendance data.\n\nThis action cannot be undone!\n\nAre you sure?`)) {
+        subjects = subjects.filter(s => s.id !== selectedSubjectId);
+        delete attendanceData[selectedSubjectId];
+        saveToLocalStorage();
+        renderSubjects();
+        bootstrap.Modal.getInstance(document.getElementById('subjectMenuModal')).hide();
+        showSyncStatus('Subject deleted successfully', 'warning');
+    }
+}
 
 function showAddSubjectModal() {
     const modal = new bootstrap.Modal(document.getElementById('addSubjectModal'));
@@ -186,24 +229,29 @@ function renderSubjects() {
     const list = document.getElementById('subjectsList');
     if (subjects.length === 0) {
         list.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-calendar-check"></i>
-                        <h4>No Subjects Added</h4>
-                        <p>Click the + button to add your first subject or work</p>
-                    </div>
-                `;
+            <div class="empty-state">
+                <i class="fas fa-calendar-check"></i>
+                <h4>No Subjects Added</h4>
+                <p>Click the + button to add your first subject or work</p>
+            </div>
+        `;
     } else {
         list.innerHTML = subjects.map(s => {
             const percentage = calculatePercentage(s.id);
             const color = percentage >= 75 ? 'var(--success-color)' : percentage >= 50 ? 'var(--secondary-color)' : 'var(--danger-color)';
             return `
-                        <div class="subject-card" onclick="openSubject(${s.id})">
-                            <div class="subject-name">${s.name}</div>
+                <div class="subject-card" onclick="openSubject(${s.id})">
+                    <div class="subject-card-content">
+                        <div class="subject-name">${s.name}</div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
                             <div class="percentage-circle" style="background: ${color}">
                                 ${percentage}%
                             </div>
+                            <i class="fas fa-ellipsis-v subject-menu-icon" onclick="showSubjectMenu(${s.id}, event)"></i>
                         </div>
-                    `;
+                    </div>
+                </div>
+            `;
         }).join('');
     }
 }
@@ -215,7 +263,6 @@ function calculatePercentage(subjectId) {
 
     let present = 0, total = 0;
     Object.values(monthData).forEach(day => {
-        // Exclude holidays, weekoffs, and leaves from calculation
         if (day.status && day.status !== 'holiday' && day.status !== 'weekoff' && day.status !== 'leave') {
             total++;
             if (day.status === 'present') present++;
@@ -254,6 +301,27 @@ function changeMonth(delta) {
     updateStats();
 }
 
+function getLeaveAbbreviation(leaveType) {
+    const abbreviations = {
+        'privileged': 'PL',
+        'casual': 'CL',
+        'sick': 'SL',
+        'earn': 'EL',
+        'other': 'OL'
+    };
+    return abbreviations[leaveType] || 'L';
+}
+
+function getShiftName(shiftCode) {
+    const shiftNames = {
+        'M': 'Morning',
+        'A': 'Afternoon', 
+        'N': 'Night',
+        'G': 'General'
+    };
+    return shiftNames[shiftCode] || 'Unknown';
+}
+
 function renderCalendar() {
     const months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
     document.getElementById('currentMonth').textContent = `${months[currentMonth]} ${currentYear}`;
@@ -284,58 +352,118 @@ function renderCalendar() {
 
         const dayData = monthData[day] || {};
         if (dayData.status) {
-            dayEl.classList.add(dayData.status);
+            if (['present', 'absent', 'halfday'].includes(dayData.status)) {
+                dayEl.classList.add(dayData.status);
+            } else {
+                dayEl.classList.add(dayData.status);
+            }
         }
 
-        // Handle shift and overtime display
         const hasShift = dayData.shift;
         const hasOvertime = dayData.overtime && dayData.overtime > 0;
 
         if (hasShift && hasOvertime) {
-            // Combined shift + overtime badge
             const combinedBadge = document.createElement('span');
             combinedBadge.className = 'combined-shift-ot';
             combinedBadge.textContent = `${dayData.shift}+OT`;
             combinedBadge.title = `${getShiftName(dayData.shift)} Shift + ${dayData.overtime} hours OT`;
             dayEl.appendChild(combinedBadge);
         } else if (hasShift) {
-            // Only shift badge
             const badge = document.createElement('span');
             badge.className = 'shift-badge';
             badge.textContent = dayData.shift;
             badge.title = `${getShiftName(dayData.shift)} Shift`;
             dayEl.appendChild(badge);
-        } else if (hasOvertime) {
-            // Only overtime indicator at bottom
-            const overtimeIndicator = document.createElement('div');
-            overtimeIndicator.className = 'overtime-indicator';
-            overtimeIndicator.textContent = `${dayData.overtime}h`;
-            overtimeIndicator.title = `${dayData.overtime} hours overtime`;
-            dayEl.appendChild(overtimeIndicator);
         }
 
-        // Show note indicator if note exists
-        if (dayData.note) {
-            const noteIndicator = document.createElement('div');
-            noteIndicator.className = 'note-indicator';
-            noteIndicator.innerHTML = '<i class="fas fa-sticky-note"></i>';
-            noteIndicator.title = dayData.note;
-            dayEl.appendChild(noteIndicator);
+        const hasNote = dayData.note && dayData.note.trim() !== '';
+        const status = dayData.status;
+        const leaveType = dayData.leaveType;
+        
+        let indicatorText = '';
+        let indicatorClass = '';
+        let indicatorTitle = '';
+
+        if (status === 'holiday') {
+            if (hasNote && hasOvertime) {
+                indicatorText = 'H+Note+OT';
+                indicatorClass = 'status-indicator combined-wo-ot';
+                indicatorTitle = `Holiday | Note: ${dayData.note} | ${dayData.overtime}h OT`;
+            } else if (hasNote) {
+                indicatorText = 'H+Note';
+                indicatorClass = 'status-indicator combined-wo';
+                indicatorTitle = `Holiday | Note: ${dayData.note}`;
+            } else if (hasOvertime) {
+                indicatorText = 'H+OT';
+                indicatorClass = 'status-indicator combined-ot';
+                indicatorTitle = `Holiday | ${dayData.overtime}h OT`;
+            } else {
+                indicatorText = 'Holiday';
+                indicatorClass = 'status-indicator holiday';
+                indicatorTitle = 'Holiday';
+            }
+        } else if (status === 'weekoff') {
+            if (hasNote && hasOvertime) {
+                indicatorText = 'WO+Note+OT';
+                indicatorClass = 'status-indicator combined-wo-ot';
+                indicatorTitle = `Week Off | Note: ${dayData.note} | ${dayData.overtime}h OT`;
+            } else if (hasNote) {
+                indicatorText = 'WO+Note';
+                indicatorClass = 'status-indicator combined-wo';
+                indicatorTitle = `Week Off | Note: ${dayData.note}`;
+            } else if (hasOvertime) {
+                indicatorText = 'WO+OT';
+                indicatorClass = 'status-indicator combined-ot';
+                indicatorTitle = `Week Off | ${dayData.overtime}h OT`;
+            } else {
+                indicatorText = 'Week Off';
+                indicatorClass = 'status-indicator weekoff';
+                indicatorTitle = 'Week Off';
+            }
+        } else if (status === 'leave' && leaveType) {
+            const leaveAbbr = getLeaveAbbreviation(leaveType);
+            if (hasNote && hasOvertime) {
+                indicatorText = `${leaveAbbr}+N+OT`;
+                indicatorClass = `status-indicator combined ${leaveType}`;
+                indicatorTitle = `${leaveType.charAt(0).toUpperCase() + leaveType.slice(1)} Leave | Note: ${dayData.note} | ${dayData.overtime}h OT`;
+            } else if (hasNote) {
+                indicatorText = `${leaveAbbr}+N`;
+                indicatorClass = `status-indicator combined ${leaveType}`;
+                indicatorTitle = `${leaveType.charAt(0).toUpperCase() + leaveType.slice(1)} Leave | Note: ${dayData.note}`;
+            } else if (hasOvertime) {
+                indicatorText = `${leaveAbbr}+OT`;
+                indicatorClass = `status-indicator combined ${leaveType}`;
+                indicatorTitle = `${leaveType.charAt(0).toUpperCase() + leaveType.slice(1)} Leave | ${dayData.overtime}h OT`;
+            } else {
+                indicatorText = leaveAbbr;
+                indicatorClass = `status-indicator ${leaveType}`;
+                indicatorTitle = `${leaveType.charAt(0).toUpperCase() + leaveType.slice(1)} Leave`;
+            }
+        } else if (hasNote && hasOvertime) {
+            indicatorText = 'N+OT';
+            indicatorClass = 'status-indicator combined';
+            indicatorTitle = `Note: ${dayData.note} | ${dayData.overtime}h OT`;
+        } else if (hasNote) {
+            indicatorText = 'Note';
+            indicatorClass = 'status-indicator note';
+            indicatorTitle = `Note: ${dayData.note}`;
+        } else if (hasOvertime) {
+            indicatorText = `${dayData.overtime}h`;
+            indicatorClass = 'status-indicator overtime';
+            indicatorTitle = `${dayData.overtime} hours overtime`;
+        }
+
+        if (indicatorText) {
+            const indicator = document.createElement('div');
+            indicator.className = indicatorClass;
+            indicator.textContent = indicatorText;
+            indicator.title = indicatorTitle;
+            dayEl.appendChild(indicator);
         }
 
         dayEl.onclick = () => showAttendanceModal(day);
         container.appendChild(dayEl);
     }
-}
-
-function getShiftName(shiftCode) {
-    const shiftNames = {
-        'M': 'Morning',
-        'A': 'Afternoon', 
-        'N': 'Night',
-        'G': 'General'
-    };
-    return shiftNames[shiftCode] || 'Unknown';
 }
 
 function showAttendanceModal(day) {
@@ -358,7 +486,6 @@ function markAttendance(status) {
 
     attendanceData[currentSubject.id][monthKey][selectedDate].status = status;
 
-    // Close all possible modals
     const attendanceModal = bootstrap.Modal.getInstance(document.getElementById('attendanceModal'));
     const moreOptionsModal = bootstrap.Modal.getInstance(document.getElementById('moreOptionsModal'));
     
@@ -370,23 +497,18 @@ function markAttendance(status) {
     saveToLocalStorage();
 }
 
-// ==================== ENHANCED OVERTIME FUNCTIONS ====================
-
 function showOvertimeModal() {
     const monthKey = `${currentYear}-${currentMonth}`;
     const existingOvertime = attendanceData[currentSubject.id]?.[monthKey]?.[selectedDate]?.overtime || '';
     const currentShift = attendanceData[currentSubject.id]?.[monthKey]?.[selectedDate]?.shift || 'None';
 
-    // Set up the overtime editor modal
     document.getElementById('overtimeEditorTitle').textContent = existingOvertime ? 'Edit Overtime' : 'Add Overtime';
     document.getElementById('overtimeDate').textContent = `${selectedDate}/${currentMonth + 1}/${currentYear}`;
     document.getElementById('overtimeInput').value = existingOvertime;
     document.getElementById('currentShiftDisplay').textContent = getShiftName(currentShift);
     
-    // Show/hide delete button based on whether overtime exists
     document.getElementById('deleteOvertimeBtn').style.display = existingOvertime ? 'block' : 'none';
     
-    // Show the modal
     bootstrap.Modal.getInstance(document.getElementById('attendanceModal')).hide();
     const modal = new bootstrap.Modal(document.getElementById('overtimeModal'));
     modal.show();
@@ -412,14 +534,11 @@ function saveOvertime() {
     }
 
     if (overtimeValue === 0) {
-        // If overtime is 0, delete it
         delete attendanceData[currentSubject.id][monthKey][selectedDate].overtime;
         showSyncStatus('Overtime removed', 'warning');
     } else {
-        // Save the overtime
         attendanceData[currentSubject.id][monthKey][selectedDate].overtime = overtimeValue;
         
-        // Automatically mark as present if not already set
         if (!attendanceData[currentSubject.id][monthKey][selectedDate].status) {
             attendanceData[currentSubject.id][monthKey][selectedDate].status = 'present';
         }
@@ -465,14 +584,11 @@ function setShift(shift) {
         attendanceData[currentSubject.id][monthKey][selectedDate] = {};
     }
 
-    // Set the shift
     attendanceData[currentSubject.id][monthKey][selectedDate].shift = shift;
     
-    // Automatically mark as present if a shift is selected (not cleared)
     if (shift !== '') {
         attendanceData[currentSubject.id][monthKey][selectedDate].status = 'present';
     } else {
-        // If clearing shift, also clear overtime if no status
         if (!attendanceData[currentSubject.id][monthKey][selectedDate].status) {
             delete attendanceData[currentSubject.id][monthKey][selectedDate].overtime;
         }
@@ -517,21 +633,16 @@ function markLeave(leaveType) {
     saveToLocalStorage();
 }
 
-// ==================== ENHANCED NOTE FUNCTIONS ====================
-
 function addNote() {
     const monthKey = `${currentYear}-${currentMonth}`;
     const existingNote = attendanceData[currentSubject.id]?.[monthKey]?.[selectedDate]?.note || '';
 
-    // Set up the note editor modal
     document.getElementById('noteEditorTitle').textContent = existingNote ? 'Edit Note' : 'Add Note';
     document.getElementById('noteDate').textContent = `${selectedDate}/${currentMonth + 1}/${currentYear}`;
     document.getElementById('noteTextArea').value = existingNote;
     
-    // Show/hide delete button based on whether note exists
     document.getElementById('deleteNoteBtn').style.display = existingNote ? 'block' : 'none';
     
-    // Show the modal
     bootstrap.Modal.getInstance(document.getElementById('moreOptionsModal')).hide();
     const modal = new bootstrap.Modal(document.getElementById('noteEditorModal'));
     modal.show();
@@ -552,11 +663,9 @@ function saveNote() {
     }
 
     if (noteText === '') {
-        // If note is empty, delete it
         delete attendanceData[currentSubject.id][monthKey][selectedDate].note;
         showSyncStatus('Note removed', 'warning');
     } else {
-        // Save the note
         attendanceData[currentSubject.id][monthKey][selectedDate].note = noteText;
         showSyncStatus('Note saved successfully');
     }
@@ -604,7 +713,7 @@ function updateStats() {
 
     let present = 0, absent = 0, halfday = 0, overtime = 0;
     let holidays = 0, weekoffs = 0;
-    let privileged = 0, casual = 0, sick = 0, other = 0;
+    let privileged = 0, casual = 0, sick = 0, other = 0, earn = 0;
     let morning = 0, afternoon = 0, night = 0, general = 0;
 
     Object.values(monthData).forEach(day => {
@@ -620,7 +729,9 @@ function updateStats() {
                         case 'privileged': privileged++; break;
                         case 'casual': casual++; break;
                         case 'sick': sick++; break;
+                        case 'earn': earn++; break;
                         case 'other': other++; break;
+                        default: other++; break;
                     }
                     break;
             }
@@ -652,12 +763,12 @@ function updateStats() {
     const percentage = totalDays > 0 ? Math.round((present + (halfday * 0.5)) / totalDays * 100) : 0;
     document.getElementById('totalPercentage').textContent = `${percentage}%`;
 
-    // Update more info modal data
     document.getElementById('infoHolidays').textContent = holidays;
     document.getElementById('infoWeekOffs').textContent = weekoffs;
     document.getElementById('infoPrivileged').textContent = privileged;
     document.getElementById('infoCasual').textContent = casual;
     document.getElementById('infoSick').textContent = sick;
+    document.getElementById('infoEarn').textContent = earn;
     document.getElementById('infoOther').textContent = other;
     document.getElementById('infoMorning').textContent = morning;
     document.getElementById('infoAfternoon').textContent = afternoon;
@@ -687,15 +798,11 @@ function calculateSalary() {
     alert("Salary calculation feature would be implemented here with rate per day input.");
 }
 
-// ==================== INITIALIZATION ====================
-
 document.addEventListener('DOMContentLoaded', function () {
     loadFromLocalStorage();
 
-    // Auto-save every 30 seconds
     setInterval(saveToLocalStorage, 30000);
 
-    // Show welcome message for first-time users
     if (!localStorage.getItem('attendanceAppData')) {
         setTimeout(() => {
             if (confirm('🎉 Welcome to Attendance Manager!\n\nWould you like to see how to use the app?')) {
