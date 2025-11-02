@@ -227,7 +227,7 @@ body {
     position: absolute;
     top: 1px;
     right: 1px;
-    font-size: 7px;
+    font-size: 10px;
     background: rgba(0, 0, 0, 0.3);
     color: white;
     padding: 1px 2px;
@@ -240,7 +240,7 @@ body {
     bottom: 1px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 7px;
+    font-size: 10px;
     color: white;
     padding: 1px 3px;
     border-radius: 2px;
@@ -617,13 +617,13 @@ body {
     }
     
     .status-indicator {
-        font-size: 6px;
+        font-size: 8px;
         padding: 1px 2px;
         max-width: 98%;
     }
     
     .weekdays {
-        font-size: 10px;
+        font-size: 12px;
     }
     
     .calendar-header {
