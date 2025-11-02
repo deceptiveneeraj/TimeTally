@@ -315,7 +315,7 @@ function getLeaveAbbreviation(leaveType) {
 function getShiftName(shiftCode) {
     const shiftNames = {
         'M': 'Morning',
-        'A': 'Afternoon', 
+        'A': 'Afternoon',
         'N': 'Night',
         'G': 'General'
     };
@@ -379,7 +379,7 @@ function renderCalendar() {
         const hasNote = dayData.note && dayData.note.trim() !== '';
         const status = dayData.status;
         const leaveType = dayData.leaveType;
-        
+
         let indicatorText = '';
         let indicatorClass = '';
         let indicatorTitle = '';
@@ -488,10 +488,10 @@ function markAttendance(status) {
 
     const attendanceModal = bootstrap.Modal.getInstance(document.getElementById('attendanceModal'));
     const moreOptionsModal = bootstrap.Modal.getInstance(document.getElementById('moreOptionsModal'));
-    
+
     if (attendanceModal) attendanceModal.hide();
     if (moreOptionsModal) moreOptionsModal.hide();
-    
+
     renderCalendar();
     updateStats();
     saveToLocalStorage();
@@ -506,9 +506,9 @@ function showOvertimeModal() {
     document.getElementById('overtimeDate').textContent = `${selectedDate}/${currentMonth + 1}/${currentYear}`;
     document.getElementById('overtimeInput').value = existingOvertime;
     document.getElementById('currentShiftDisplay').textContent = getShiftName(currentShift);
-    
+
     document.getElementById('deleteOvertimeBtn').style.display = existingOvertime ? 'block' : 'none';
-    
+
     bootstrap.Modal.getInstance(document.getElementById('attendanceModal')).hide();
     const modal = new bootstrap.Modal(document.getElementById('overtimeModal'));
     modal.show();
@@ -517,7 +517,7 @@ function showOvertimeModal() {
 function saveOvertime() {
     const overtimeValue = parseFloat(document.getElementById('overtimeInput').value);
     const monthKey = `${currentYear}-${currentMonth}`;
-    
+
     if (!attendanceData[currentSubject.id]) {
         attendanceData[currentSubject.id] = {};
     }
@@ -538,11 +538,11 @@ function saveOvertime() {
         showSyncStatus('Overtime removed', 'warning');
     } else {
         attendanceData[currentSubject.id][monthKey][selectedDate].overtime = overtimeValue;
-        
+
         if (!attendanceData[currentSubject.id][monthKey][selectedDate].status) {
             attendanceData[currentSubject.id][monthKey][selectedDate].status = 'present';
         }
-        
+
         showSyncStatus('Overtime saved successfully');
     }
 
@@ -585,7 +585,7 @@ function setShift(shift) {
     }
 
     attendanceData[currentSubject.id][monthKey][selectedDate].shift = shift;
-    
+
     if (shift !== '') {
         attendanceData[currentSubject.id][monthKey][selectedDate].status = 'present';
     } else {
@@ -593,7 +593,7 @@ function setShift(shift) {
             delete attendanceData[currentSubject.id][monthKey][selectedDate].overtime;
         }
     }
-    
+
     bootstrap.Modal.getInstance(document.getElementById('shiftModal')).hide();
     renderCalendar();
     updateStats();
@@ -640,9 +640,9 @@ function addNote() {
     document.getElementById('noteEditorTitle').textContent = existingNote ? 'Edit Note' : 'Add Note';
     document.getElementById('noteDate').textContent = `${selectedDate}/${currentMonth + 1}/${currentYear}`;
     document.getElementById('noteTextArea').value = existingNote;
-    
+
     document.getElementById('deleteNoteBtn').style.display = existingNote ? 'block' : 'none';
-    
+
     bootstrap.Modal.getInstance(document.getElementById('moreOptionsModal')).hide();
     const modal = new bootstrap.Modal(document.getElementById('noteEditorModal'));
     modal.show();
@@ -651,7 +651,7 @@ function addNote() {
 function saveNote() {
     const noteText = document.getElementById('noteTextArea').value.trim();
     const monthKey = `${currentYear}-${currentMonth}`;
-    
+
     if (!attendanceData[currentSubject.id]) {
         attendanceData[currentSubject.id] = {};
     }

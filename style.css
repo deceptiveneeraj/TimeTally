@@ -615,22 +615,22 @@ body {
         font-size: 12px;
         min-height: 35px;
     }
-    
+
     .status-indicator {
         font-size: 8px;
         padding: 1px 2px;
         max-width: 98%;
     }
-    
+
     .weekdays {
         font-size: 12px;
     }
-    
+
     .calendar-header {
         padding: 10px 12px;
         font-size: 13px;
     }
-    
+
     .stat-row {
         font-size: 13px;
     }
@@ -647,7 +647,7 @@ body {
         flex-direction: column;
         gap: 8px;
     }
-    
+
     .info-item {
         width: 100%;
     }
